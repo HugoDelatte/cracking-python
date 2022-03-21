@@ -172,6 +172,33 @@ def quicksort_tco(arr: list, low: int, high: int) -> None:
 
 
 # ======================================================================================================================
+#                                               Stable Quicksort
+# ======================================================================================================================
+def quicksort_stable(arr: list):
+    if len(arr) <= 1:
+        return arr
+
+    mid = len(arr) // 2
+    pivot = arr[mid]
+    left = []
+    right = []
+    for i, e in enumerate(arr):
+        if i == mid:
+            continue
+        if e < pivot:
+            left.append(e)
+        elif e > pivot:
+            right.append(e)
+        # If value is same, chose based on index
+        else:
+            if i < mid:
+                left.append(e)
+            else:
+                right.append(e)
+    return quicksort_stable(left) + [pivot] + quicksort_stable(right)
+
+
+# ======================================================================================================================
 #                                                   Tests
 # ======================================================================================================================
 def is_sorted(arr: list) -> bool:
@@ -184,7 +211,7 @@ def is_sorted(arr: list) -> bool:
     return True
 
 
-def quicksort_test(func: callable, **kwargs) -> None:
+def quicksort_test(func: callable, stable:bool=False, **kwargs) -> None:
     """
     Test a sorting function against multiple arrays
     """
@@ -202,7 +229,10 @@ def quicksort_test(func: callable, **kwargs) -> None:
     ]
     for arr in degenerated_arrays:
         n = len(arr)
-        func(arr, 0, n - 1, **kwargs)
+        if stable:
+            arr = func(arr,  **kwargs)
+        else:
+            func(arr, 0, n - 1, **kwargs)
         assert len(arr) == n
         assert is_sorted(arr)
 
@@ -210,7 +240,10 @@ def quicksort_test(func: callable, **kwargs) -> None:
     for _ in range(number_of_test):
         arr = list(np.random.randint(max_size, size=max_size))
         n = len(arr)
-        func(arr, 0, n - 1, **kwargs)
+        if stable:
+            arr = func(arr, **kwargs)
+        else:
+            func(arr, 0, n - 1, **kwargs)
         assert len(arr) == n
         assert is_sorted(arr)
 
@@ -325,6 +358,8 @@ if __name__ == '__main__':
     quicksort_test(quicksort_lomuto, use_last=False)
     quicksort_test(quicksort_hoare)
     quicksort_test(quicksort_tco)
+    quicksort_test(quicksort_stable, stable=True)
+
 
     # Plot Time
     plot_time_complexity(quicksort_lomuto, title='Quick Sort - Lomuto', use_last=True)
